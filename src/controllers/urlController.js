@@ -34,13 +34,18 @@ const createShortUrl = async function(req, res){
         const cachedData = await GET_ASYNC(`${longUrl}`);
         if(cachedData) {console.log("res by cache hit");
           return res.status(200).send({status:true, data: JSON.parse(cachedData)});    
-        }else{
-            const urlDoc = await urlModel.findOne({longUrl:longUrl}).select({_id:0, __v:0}); //for same response each time
-            if(urlDoc) {console.log("oops! cache miss, res by findOne()");
-              res.status(200).send({status:true, data: urlDoc});
-              return await SET_ASYNC(`${longUrl}`, JSON.stringify(urlDoc));       
-            }
-        } 
+        }
+     
+        const urlDoc = await urlModel.findOne({longUrl:longUrl}).select({_id:0, __v:0}); //for same response each time
+        if(urlDoc) {console.log("oops! cache miss, res by findOne()");
+          res.status(200).send({status:true, data: urlDoc});
+          const present = new Date(); //in millisec
+          const eod = new Date().setHours(23,59,59,999); //millisec
+          return await redisClient.set(`${longUrl}`, JSON.stringify(urlDoc), 'EX', parseInt((eod-present)/1000), (err,result)=>{   
+            if(err) console.log(err)  //here time is in sec + in integer
+            else console.log("key set with an expiry time of : ", new Date(eod).toLocaleString())
+          });  
+        }   
 
         const data = {longUrl:longUrl};
         data.urlCode = shortid.generate().toLowerCase();
@@ -50,13 +55,12 @@ const createShortUrl = async function(req, res){
         delete savedData._doc._id; delete savedData._doc.__v;
         res.status(201).send({status:true, data:savedData})
 
-        const present = new Date(); //in millisec
-        const eod = new Date().setHours(23,59,59,999); //millisec
-        return redisClient.set(`${longUrl}`, JSON.stringify(savedData), 'EX', parseInt((eod-present)/1000), (err,result)=>{   //here time is in sec + in integer
+        const expiry = 300;
+        return  redisClient.setex(`${longUrl}`, expiry, JSON.stringify(savedData), function(err, result){
           if(err) console.log(err)
-          else console.log("key set with an expiry time of : ", new Date(eod).toLocaleString())
-        });
-         
+          else console.log(`key is set but will expire after ${expiry} seconds`)
+        })
+   
     } catch (error) {
         console.log(error);
         return res.status(500).send({status:false, message:error.message})
