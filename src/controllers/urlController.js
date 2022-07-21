@@ -49,7 +49,13 @@ const createShortUrl = async function(req, res){
         const savedData = await urlModel.create(data);
         delete savedData._doc._id; delete savedData._doc.__v;
         res.status(201).send({status:true, data:savedData})
-        return await SET_ASYNC(`${longUrl}`, JSON.stringify(savedData));
+
+        const present = new Date(); //in millisec
+        const eod = new Date().setHours(23,59,59,999); //millisec
+        return redisClient.set(`${longUrl}`, JSON.stringify(savedData), 'EX', parseInt((eod-present)/1000), (err,result)=>{   //here time is in sec + in integer
+          if(err) console.log(err)
+          else console.log("key set with an expiry time of : ", new Date(eod).toLocaleString())
+        });
          
     } catch (error) {
         console.log(error);
@@ -98,3 +104,23 @@ module.exports = {createShortUrl, urlRedirect, flushw}
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // redisClient.setex(`${longUrl}`, 24*60*60, JSON.stringify(savedData), callback)     //Only strings, dates and buffers are accepted. Please update your code to use valid 
+        // Since SETNX, SETEX, PSETEX are going to be deprecated in the next releases, the correct way is:
