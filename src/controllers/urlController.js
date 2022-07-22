@@ -22,8 +22,8 @@ const urlModel = require('../models/urlModel');
       });
     
 //2. use the commands :
-      const SET_ASYNC = promisify(redisClient.SET).bind(redisClient);
-      const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
+      const SET_ASYNC = promisify(redisClient.SET).bind(redisClient); //it binds client and promisify.
+      const GET_ASYNC = promisify(redisClient.GET).bind(redisClient); 
 
 
 /*------------------------------------------------------------Handler function of API-1-----------------------------------------------------*/

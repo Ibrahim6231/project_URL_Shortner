@@ -6,6 +6,7 @@ const {createShortUrl, urlRedirect, flushw} = require('../controllers/urlControl
 
 router.post('/url/shorten', validateUrl, createShortUrl);
 router.get('/:urlCode', urlRedirect);
+
 router.put('/clearCache', flushw);
 
 
