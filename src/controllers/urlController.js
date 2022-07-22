@@ -126,5 +126,3 @@ module.exports = {createShortUrl, urlRedirect, flushw}
 
 
 
- // redisClient.setex(`${longUrl}`, 24*60*60, JSON.stringify(savedData), callback)     //Only strings, dates and buffers are accepted. Please update your code to use valid 
-        // Since SETNX, SETEX, PSETEX are going to be deprecated in the next releases, the correct way is:
