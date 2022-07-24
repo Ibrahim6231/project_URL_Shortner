@@ -8,12 +8,12 @@ function isUrl(x){
 const validateUrl = async function(req, res, next){
     try {
         let {longUrl } = req.body;
-        longUrl = longUrl.trim(); 
-
+         
         if(Object.keys(req.body).length === 0) return res.status(400).send({status:false, message:"no data received, empty body can't be processed"});
 
         if(!longUrl) return res.status(400).send({status:false, message:"please enter the URL value in longUrl key"});
-
+        longUrl = longUrl.trim();
+        
         if(!isUrl(longUrl)) return res.status(400).send({status:false, message:"enter a valid URL"}); //validating with regEx
 
         req.body.longUrl = longUrl;
